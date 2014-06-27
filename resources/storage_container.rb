@@ -14,10 +14,14 @@
 # limitations under the License.
 #--------------------------------------------------------------------------
 
-actions :create, :delete
+actions :create, :delete, :retrieve
 
 attribute :storage_account, :kind_of => String, :required => true
 attribute :access_key, :kind_of => String, :required => true
+
+attribute :container_name, :kind_of => String
+attribute :blob_name, :kind_of => String
+attribute :local_filename, :kind_of => String
 
 def initialize(*args)
   super

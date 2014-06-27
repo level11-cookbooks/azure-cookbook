@@ -49,3 +49,60 @@ action :delete do
     Chef::Log.debug("Blob container #{new_resource.name} does not exist.")
   end
 end
+
+MB=1024*1024
+CHUNK_MAX=4*MB
+
+action :retrieve do
+
+  setup_storage_service
+  abs = Azure::BlobService.new
+
+  container_name=new_resource.container_name
+  blob_name=new_resource.blob_name
+  write_name=new_resource.local_filename
+
+  content_length=-1
+  # check if exists
+  abs.list_blobs(container_name).each do |blob|
+    if blob.name == blob_name
+      content_length=blob.properties[:content_length]
+      print "Target content length: #{content_length}\n"
+    end
+  end
+  if content_length == -1
+    "Content length -1 -- aborting"
+    return
+  end
+
+  # if write_name exist, copy to .1?   or something
+  if ::File.exists?(write_name)
+    ::File.rename(write_name, "#{write_name}.1")
+  end
+
+  blob_pointer=0
+  ::File.open(write_name, "wb") do |f|
+    total_time=0.0
+    while blob_pointer < content_length
+      #loop
+      # NOTE: 4MB is max size chunk azure can handle
+      blob_end_pointer = blob_pointer + CHUNK_MAX
+      #print "to block #{blob_end_pointer}\n"
+      if blob_end_pointer > content_length
+        blob_end_pointer = content_length
+      end
+      # do your work
+      t1 = Time.now
+      blob, content = abs.get_blob(container_name, blob_name)
+      t2 = Time.now
+      delta = t2 - t1
+      total_time += delta
+      printf "--- progress %.2f percent, time: %.2f s\n", (blob_end_pointer.to_f/content_length.to_f * 100).to_f, delta
+      f.write(content)
+      blob_pointer = blob_end_pointer+1
+    end
+    print "\nTotal dl time: %.2f seconds \n" % total_time
+    print "Avg dl rate: %.4f  MBytes/sec\n" % (content_length.to_f/1024/1024/total_time.to_f)
+  end
+end
+
