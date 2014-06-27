@@ -1,0 +1,7 @@
+DEPENDENCIES
+  microsoft_azure
+    path: .
+    metadata: true
+
+GRAPH
+  microsoft_azure (0.2.0)
