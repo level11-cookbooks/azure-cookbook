@@ -82,6 +82,7 @@ action :retrieve do
 
   blob_pointer=0
   ::File.open(write_name, "wb") do |f|
+    f.sync=true
     total_time=0.0
     while blob_pointer < content_length
       #loop

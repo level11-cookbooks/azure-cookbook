@@ -4,4 +4,4 @@ DEPENDENCIES
     metadata: true
 
 GRAPH
-  microsoft_azure (0.2.0)
+  microsoft_azure (0.2.1)
